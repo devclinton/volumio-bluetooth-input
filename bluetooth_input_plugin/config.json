@@ -1,0 +1,7 @@
+{
+  "adapter": "hci0",
+  "audioProfile": "a2dp",
+  "outputDevice": "volumio",
+  "autoTrust": true,
+  "discoverable": true
+}

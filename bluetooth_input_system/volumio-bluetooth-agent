@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+
+import dbus
+import dbus.service
+import dbus.mainloop.glib
+from gi.repository import GLib
+
+AGENT_PATH = "/volumio/bluetooth/agent"
+AGENT_CAPABILITY = "NoInputNoOutput"
+ADAPTER_PATH = "/org/bluez/hci0"
+
+
+class Agent(dbus.service.Object):
+    @dbus.service.method("org.bluez.Agent1", in_signature="", out_signature="")
+    def Release(self):
+        pass
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="o", out_signature="s")
+    def RequestPinCode(self, device):
+        return "0000"
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="ouq", out_signature="")
+    def DisplayPasskey(self, device, passkey, entered):
+        pass
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="os", out_signature="")
+    def DisplayPinCode(self, device, pincode):
+        pass
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="o", out_signature="u")
+    def RequestPasskey(self, device):
+        return dbus.UInt32(0)
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="ou", out_signature="")
+    def RequestConfirmation(self, device, passkey):
+        trust_device(device)
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="o", out_signature="")
+    def RequestAuthorization(self, device):
+        trust_device(device)
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="os", out_signature="")
+    def AuthorizeService(self, device, uuid):
+        trust_device(device)
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="", out_signature="")
+    def Cancel(self):
+        pass
+
+
+def set_property(path, interface, name, value):
+    obj = bus.get_object("org.bluez", path)
+    props = dbus.Interface(obj, "org.freedesktop.DBus.Properties")
+    props.Set(interface, name, value)
+
+
+def trust_device(path):
+    try:
+        set_property(path, "org.bluez.Device1", "Trusted", dbus.Boolean(True))
+    except Exception:
+        pass
+
+
+def configure_adapter():
+    set_property(ADAPTER_PATH, "org.bluez.Adapter1", "Powered", dbus.Boolean(True))
+    set_property(ADAPTER_PATH, "org.bluez.Adapter1", "Pairable", dbus.Boolean(True))
+    set_property(ADAPTER_PATH, "org.bluez.Adapter1", "Discoverable", dbus.Boolean(True))
+    set_property(ADAPTER_PATH, "org.bluez.Adapter1", "DiscoverableTimeout", dbus.UInt32(0))
+
+
+if __name__ == "__main__":
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    bus = dbus.SystemBus()
+    Agent(bus, AGENT_PATH)
+    configure_adapter()
+    manager = dbus.Interface(
+        bus.get_object("org.bluez", "/org/bluez"),
+        "org.bluez.AgentManager1",
+    )
+    manager.RegisterAgent(AGENT_PATH, AGENT_CAPABILITY)
+    manager.RequestDefaultAgent(AGENT_PATH)
+    GLib.MainLoop().run()

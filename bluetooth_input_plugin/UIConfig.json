@@ -1,0 +1,47 @@
+{
+  "page": {
+    "label": "Bluetooth Input"
+  },
+  "sections": [
+    {
+      "id": "connection",
+      "element": "section",
+      "label": "Connection",
+      "content": "Select Bluetooth Input from Sources, then pair or connect to volumio from your phone or computer. Connected device details are shown in the source view."
+    },
+    {
+      "id": "adapter",
+      "element": "section",
+      "label": "Adapter",
+      "saveButton": true,
+      "content": [
+        {
+          "id": "adapter",
+          "element": "input",
+          "name": "Bluetooth adapter",
+          "type": "text",
+          "value": "hci0"
+        },
+        {
+          "id": "outputDevice",
+          "element": "input",
+          "name": "BlueALSA output device",
+          "type": "text",
+          "value": "volumio"
+        },
+        {
+          "id": "autoTrust",
+          "element": "checkbox",
+          "name": "Automatically trust paired devices",
+          "value": true
+        },
+        {
+          "id": "discoverable",
+          "element": "checkbox",
+          "name": "Keep adapter discoverable while source is active",
+          "value": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+volumio ALL=(root) NOPASSWD: /usr/local/bin/volumio-bluetooth-input start, /usr/local/bin/volumio-bluetooth-input stop, /usr/local/bin/volumio-bluetooth-input status

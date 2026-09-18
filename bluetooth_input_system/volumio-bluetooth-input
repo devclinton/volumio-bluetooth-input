@@ -1,0 +1,38 @@
+#!/bin/sh
+set -eu
+
+case "${1:-}" in
+  start)
+    systemctl start bluetooth.service
+    systemctl start bluealsa.service
+    systemctl start volumio-bluetooth-agent.service
+    bluetoothctl power on >/dev/null
+    bluetoothctl pairable on >/dev/null
+    bluetoothctl discoverable on >/dev/null
+    systemctl restart volumio-bluealsa-aplay.service
+    ;;
+  stop)
+    systemctl stop volumio-bluealsa-aplay.service
+    ;;
+  status)
+    printf 'bluetooth_service=%s\n' "$(systemctl is-active bluetooth.service 2>/dev/null || true)"
+    printf 'bluealsa_service=%s\n' "$(systemctl is-active bluealsa.service 2>/dev/null || true)"
+    printf 'agent_service=%s\n' "$(systemctl is-active volumio-bluetooth-agent.service 2>/dev/null || true)"
+    printf 'bridge_service=%s\n' "$(systemctl is-active volumio-bluealsa-aplay.service 2>/dev/null || true)"
+    printf 'adapter=%s\n' "$(bluetoothctl show 2>/dev/null | awk -F': ' '/Name:/ {print $2; exit}')"
+    connected=$(bluetoothctl devices Connected 2>/dev/null | grep -E '^Device ([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2} ' || true)
+    if [ -n "$connected" ]; then
+      printf '%s\n' "$connected" | while IFS= read -r line; do
+        address=$(printf '%s\n' "$line" | awk '{print $2}')
+        name=$(printf '%s\n' "$line" | cut -d' ' -f3-)
+        printf 'connected=%s address=%s\n' "$name" "$address"
+      done
+    else
+      printf '%s\n' 'connected=none'
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status}" >&2
+    exit 2
+    ;;
+esac
