@@ -5,7 +5,8 @@ Requires=bluealsa.service volumio-bluetooth-agent.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/bluealsa-aplay -S --profile-a2dp -D volumio 00:00:00:00:00:00
+Nice=-5
+ExecStart=/usr/bin/bluealsa-aplay -S --profile-a2dp --volume=none --pcm-buffer-time=1000000 --pcm-period-time=100000 -D volumio 00:00:00:00:00:00
 Restart=on-failure
 RestartSec=2
 
